@@ -1,0 +1,312 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Calcula tu tarifa por hora y el precio de tus proyectos como autónomo.">
+  <title>PrecioClaro — Calcula tus tarifas</title>
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: system-ui, sans-serif;
+      background: #f3f6fb;
+      color: #17243a;
+      line-height: 1.5;
+    }
+
+    header {
+      background: #173b70;
+      color: white;
+      padding: 28px 20px;
+      text-align: center;
+    }
+
+    header h1 { margin: 0; font-size: 2rem; }
+    header p { margin-bottom: 0; color: #e0eaff; }
+
+    main {
+      width: min(720px, 92%);
+      margin: 28px auto;
+    }
+
+    .card {
+      background: white;
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 20px;
+      box-shadow: 0 5px 20px #142c5010;
+    }
+
+    h2 { margin-top: 0; font-size: 1.25rem; }
+
+    label {
+      display: block;
+      font-weight: 600;
+      margin: 16px 0 6px;
+    }
+
+    input {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      font: inherit;
+    }
+
+    input:focus {
+      outline: 2px solid #4c83d1;
+      border-color: transparent;
+    }
+
+    .hint { color: #5c687a; font-size: .88rem; }
+
+    button {
+      width: 100%;
+      border: 0;
+      border-radius: 9px;
+      padding: 13px;
+      margin-top: 20px;
+      background: #1d5bbf;
+      color: white;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    button:hover { background: #174994; }
+    button.secondary { background: #e8eef8; color: #173b70; }
+
+    .results {
+      background: #edf5ff;
+      border-radius: 12px;
+      padding: 18px;
+      margin-top: 20px;
+    }
+
+    .result-line {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 10px 0;
+      border-bottom: 1px solid #d4e2f4;
+    }
+
+    .result-line:last-child { border-bottom: 0; }
+
+    .amount {
+      color: #174994;
+      font-weight: 800;
+      text-align: right;
+    }
+
+    footer {
+      text-align: center;
+      padding: 12px 20px 32px;
+      color: #657186;
+      font-size: .85rem;
+    }
+
+    @media print {
+      body { background: white; }
+      header { background: white; color: #17243a; }
+      header p { color: #17243a; }
+      button { display: none; }
+      .card { box-shadow: none; border: 1px solid #ddd; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>PrecioClaro</h1>
+    <p>Calcula cuánto cobrar por tu trabajo.</p>
+  </header>
+
+  <main>
+    <section class="card">
+      <h2>1. Tus objetivos mensuales</h2>
+      <p class="hint">
+        Introduce cantidades mensuales en euros.
+        El porcentaje de reserva es orientativo, no un cálculo fiscal.
+      </p>
+
+      <label for="income">¿Cuánto quieres ganar al mes? (€)</label>
+      <input id="income" type="number" min="0" step="50" value="2000">
+
+      <label for="expenses">Gastos mensuales del negocio (€)</label>
+      <input id="expenses" type="number" min="0" step="10" value="400">
+
+      <label for="hours">Horas facturables al mes</label>
+      <input id="hours" type="number" min="1" max="300" value="100">
+
+      <label for="reserve">Reserva estimada para impuestos y otros costes (%)</label>
+      <input id="reserve" type="number" min="0" max="50" value="20">
+      <p class="hint">
+        Ajusta este porcentaje según tu situación real.
+        No sustituye el asesoramiento de un profesional.
+      </p>
+
+      <button id="calculate">Calcular mis tarifas</button>
+
+      <div class="results" id="results" aria-live="polite">
+        Introduce tus datos y pulsa «Calcular mis tarifas».
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>2. Calcula el precio de un proyecto</h2>
+
+      <label for="projectHours">Horas de trabajo del proyecto</label>
+      <input id="projectHours" type="number" min="0" step="0.5" value="8">
+
+      <label for="materials">Materiales y otros costes (€)</label>
+      <input id="materials" type="number" min="0" step="1" value="30">
+
+      <button class="secondary" id="project">
+        Calcular precio del proyecto
+      </button>
+
+      <div id="projectResult" class="results" aria-live="polite">
+        El precio del proyecto aparecerá aquí.
+      </div>
+
+      <button class="secondary" id="copy">Copiar mis resultados</button>
+      <button class="secondary" id="print">Imprimir o guardar en PDF</button>
+    </section>
+
+    <section class="card">
+      <h2>Cómo interpretar el resultado</h2>
+      <p>
+        La tarifa es una estimación basada en el objetivo de ingresos,
+        los gastos, la reserva elegida y las horas facturables.
+      </p>
+      <p>
+        No incluye automáticamente todos los impuestos, cotizaciones,
+        periodos sin trabajo ni particularidades de tu actividad.
+        Revisa tus cifras antes de fijar precios reales.
+      </p>
+    </section>
+  </main>
+
+  <footer>
+    PrecioClaro · Herramienta orientativa gratuita.
+    No constituye asesoramiento fiscal o financiero.
+  </footer>
+
+  <script>
+    const $ = id => document.getElementById(id);
+    const euro = n => n.toLocaleString("es-ES", {
+      style: "currency",
+      currency: "EUR"
+    });
+
+    let hourlyRate = 0;
+    let projectPrice = 0;
+
+    function calculate() {
+      const income = Number($("income").value);
+      const expenses = Number($("expenses").value);
+      const hours = Number($("hours").value);
+      const reserve = Number($("reserve").value);
+
+      if (
+        income < 0 || expenses < 0 ||
+        hours <= 0 || reserve < 0 || reserve >= 100 ||
+        ![$("income"), $("expenses"), $("hours"), $("reserve")]
+          .every(el => el.value.trim() !== "")
+      ) {
+        $("results").textContent =
+          "Revisa los datos: las horas deben ser mayores que cero y la reserva debe ser inferior al 100%.";
+        return false;
+      }
+
+      hourlyRate = (income + expenses) /
+        (1 - reserve / 100) / hours;
+
+      $("results").innerHTML = `
+        <div class="result-line">
+          <span>Tarifa orientativa por hora</span>
+          <span class="amount">${euro(hourlyRate)}</span>
+        </div>
+        <div class="result-line">
+          <span>Objetivo mensual</span>
+          <span>${euro(income)}</span>
+        </div>
+        <div class="result-line">
+          <span>Gastos mensuales</span>
+          <span>${euro(expenses)}</span>
+        </div>
+        <div class="result-line">
+          <span>Reserva estimada</span>
+          <span>${reserve}%</span>
+        </div>
+      `;
+      return true;
+    }
+
+    function calculateProject() {
+      const hours = Number($("projectHours").value);
+      const materials = Number($("materials").value);
+
+      if (
+        !Number.isFinite(hourlyRate) || hourlyRate <= 0 ||
+        hours < 0 || materials < 0 ||
+        $("projectHours").value.trim() === "" ||
+        $("materials").value.trim() === ""
+      ) {
+        $("projectResult").textContent =
+          "Calcula primero una tarifa válida y revisa las horas y los costes.";
+        return false;
+      }
+
+      projectPrice = hours * hourlyRate + materials;
+
+      $("projectResult").innerHTML = `
+        <div class="result-line">
+          <span>Trabajo (${hours} horas)</span>
+          <span>${euro(hours * hourlyRate)}</span>
+        </div>
+        <div class="result-line">
+          <span>Materiales y otros costes</span>
+          <span>${euro(materials)}</span>
+        </div>
+        <div class="result-line">
+          <strong>Precio estimado del proyecto</strong>
+          <span class="amount">${euro(projectPrice)}</span>
+        </div>
+      `;
+      return true;
+    }
+
+    $("calculate").addEventListener("click", () => {
+      if (calculate()) calculateProject();
+    });
+
+    $("project").addEventListener("click", calculateProject);
+
+    $("copy").addEventListener("click", async () => {
+      if (!calculate()) return;
+      if (!calculateProject()) return;
+
+      const summary =
+        `PrecioClaro\nTarifa por hora: ${euro(hourlyRate)}\n` +
+        `Precio estimado del proyecto: ${euro(projectPrice)}\n` +
+        "Estimaciones orientativas, no asesoramiento fiscal.";
+
+      try {
+        await navigator.clipboard.writeText(summary);
+        $("copy").textContent = "¡Resultados copiados!";
+      } catch {
+        window.prompt("Copia tus resultados:", summary);
+      }
+    });
+
+    $("print").addEventListener("click", () => window.print());
+
+    calculate();
+    calculateProject();
+  </script>
+</body>
+</html>
